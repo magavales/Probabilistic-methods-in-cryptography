@@ -40,7 +40,7 @@ func main() {
 	seq.Print()
 
 	log.Println("Конвертируем исходную последовательность в двочиную систему.")
-	fmt.Println()
+	fmt.Println("-------------------------------------------------------------------")
 	seqBinary = ConvertToBinary(seq.Seq)
 	log.Println("Последовательность конвертирована.")
 
@@ -55,7 +55,7 @@ func main() {
 	for i := 0; i < field; i++ {
 		fmt.Printf("   f%d", field-i)
 	}
-	fmt.Println()
+	fmt.Println("-------------------------------------------------------------------")
 
 	for i := 0; i < int(math.Pow(2, float64(field))); i++ {
 		fmt.Printf("%d:", seq.Seq[i])
@@ -70,7 +70,7 @@ func main() {
 		fmt.Println()
 	}
 
-	fmt.Println()
+	fmt.Println("-------------------------------------------------------------------")
 	log.Println("Посчитаем вес функции.")
 
 	for i := 0; i < len(functions); i++ {
@@ -78,12 +78,29 @@ func main() {
 		functions[i].Polinom = TransformationToPolinom(functions[i].Function)
 	}
 
-	fmt.Println()
+	fmt.Println("-------------------------------------------------------------------")
 	log.Println("Получим полином Жигалкина и фиктивные переменные для каждой функции.")
 
 	for i := 0; i < len(functions); i++ {
 		zhigalkin = functions[i].CreatePolinom()
 		functions[i].PrintPolinom(i, zhigalkin)
+	}
+
+	fmt.Println("-------------------------------------------------------------------")
+	log.Println("Найдем преобладание единиц.")
+	for i := 0; i < len(functions); i++ {
+		if functions[i].Predominance() {
+			fmt.Printf("Для f%d преобладания единиц нет.\n", field-i)
+		}
+	}
+
+	fmt.Println("-------------------------------------------------------------------")
+	log.Println("Найдем запрeт для функций.")
+	for i := 0; i < len(functions); i++ {
+		if len(functions[i].ComputeZapret()) != 0 {
+			fmt.Printf("Запрет найден для f%d.\n", field-i)
+			fmt.Printf("Функция f%d не сильноравновероятная.\n", field-i)
+		}
 	}
 }
 
