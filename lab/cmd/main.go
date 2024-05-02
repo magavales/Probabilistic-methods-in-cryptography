@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
+	"laba1/pkg"
 	"log"
 	"math"
-	"math/rand"
 	"strconv"
-	"strings"
 )
 
 var field = 6
@@ -19,41 +18,39 @@ func main() {
 			32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
 			48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
 		}
-		seq       []int
+		functions []*pkg.CoordinateFunction
 		seqBinary [][]int
 		seqF      [][]int
 		seqTemp   []int
 		/*test      = []int{
 			3, 5, 15, 12, 8, 0, 4, 14, 10, 6, 1, 11, 9, 13, 2, 7,
 		}*/
-		members = []string{
-			"1", "x1", "x2", "x1x2", "x3", "x1x3", "x2x3", "x1x2x3", "x4", "x1x4", "x2x4", "x1x2x4", "x3x4", "x1x3x4", "x2x3x4", "x1x2x3x4",
-			"x5", "x1x5", "x2x5", "x1x2x5", "x3x5", "x1x3x5", "x2x3x5", "x1x2x3x5", "x4x5", "x1x4x5", "x2x4x5", "x1x2x4x5", "x3x4x5", "x1x3x4x5",
-			"x2x3x4x5", "x1x2x3x4x5", "x6", "x1x6", "x2x6", "x1x2x6", "x3x6", "x1x3x6", "x2x3x6", "x1x2x3x6", "x4x6", "x1x4x6", "x2x4x6", "x1x2x4x6",
-			"x3x4x6", "x1x3x4x6", "x2x3x4x6", "x1x2x3x4x6", "x5x6", "x1x5x6", "x2x5x6", "x1x2x5x6", "x3x5x6", "x1x3x5x6", "x2x3x5x6", "x1x2x3x5x6",
-			"x4x5x6", "x1x4x5x6", "x2x4x5x6", "x1x2x4x5x6", "x3x4x5x6", "x1x3x4x5x6", "x2x3x4x5x6", "x1x2x3x4x5x6",
-		}
-		x = []string{
-			"x1", "x2", "x3", "x4", "x5", "x6",
-		}
-		zhigalkin string
-		weight    = 0
+		zhigalkin []string
 	)
+	functions = make([]*pkg.CoordinateFunction, field)
 	seqF = make([][]int, field)
 	for i := 0; i < field; i++ {
 		seqF[i] = make([]int, int(math.Pow(2, float64(field))))
 	}
 
 	log.Println("Генерируется последовательность.")
-	seq = Sattolo(items64)
+	seq := pkg.NewSequence(field)
+	seq.Sattolo(items64)
 	log.Println("Последовательность сгенерирована.")
-	for i := 0; i < int(math.Pow(2, float64(field))); i++ {
-		fmt.Printf("%d ", seq[i])
-	}
+	seq.Print()
 
 	log.Println("Конвертируем исходную последовательность в двочиную систему.")
-	seqBinary = ConvertToBinary(seq)
+	fmt.Println()
+	seqBinary = ConvertToBinary(seq.Seq)
 	log.Println("Последовательность конвертирована.")
+
+	for j := 0; j < field; j++ {
+		for i := 0; i < int(math.Pow(2, float64(field))); i++ {
+			seqTemp = append(seqTemp, seqBinary[i][j])
+		}
+		functions[j] = pkg.NewCoordinateFunction(seqTemp, field)
+		seqTemp = nil
+	}
 
 	for i := 0; i < field; i++ {
 		fmt.Printf("   f%d", field-i)
@@ -61,10 +58,10 @@ func main() {
 	fmt.Println()
 
 	for i := 0; i < int(math.Pow(2, float64(field))); i++ {
-		fmt.Printf("%d:", seq[i])
+		fmt.Printf("%d:", seq.Seq[i])
 
 		for j := 0; j < field; j++ {
-			if seq[i] > 9 {
+			if seq.Seq[i] > 9 {
 				fmt.Printf(" %d  ", seqBinary[i][j])
 			} else {
 				fmt.Printf("  %d ", seqBinary[i][j])
@@ -76,53 +73,18 @@ func main() {
 	fmt.Println()
 	log.Println("Посчитаем вес функции.")
 
-	for j := 0; j < field; j++ {
-		seqTemp = make([]int, int(math.Pow(2, float64(field))))
-		for i := 0; i < int(math.Pow(2, float64(field))); i++ {
-			seqTemp[i] = seqBinary[i][j]
-			if seqTemp[i] == 1 {
-				weight++
-			}
-		}
-		fmt.Printf("Вес для f%d = %d\n", field-j, weight)
-		seqF[j] = TransformationToPolinom(seqTemp)
-		weight = 0
+	for i := 0; i < len(functions); i++ {
+		fmt.Printf("Вес для f%d = %d\n", field-i, functions[i].GetWeight())
+		functions[i].Polinom = TransformationToPolinom(functions[i].Function)
 	}
 
 	fmt.Println()
 	log.Println("Получим полином Жигалкина и фиктивные переменные для каждой функции.")
 
-	for i := 0; i < len(seqF); i++ {
-		for j := 0; j < len(seqF[i]); j++ {
-			if seqF[i][j] == 1 {
-				zhigalkin = zhigalkin + members[j] + " "
-			}
-		}
-		str := strings.Split(zhigalkin, " ")
-		str = str[:len(str)-1]
-		fmt.Printf("Полином Жигалкина для f%d: %s", field-i, strings.Join(str, "+"))
-
-		for k := 0; k < len(x); k++ {
-			if !strings.Contains(zhigalkin, x[k]) {
-				fmt.Printf("Фиктивные переменные для f%d: %s\n", field-i, x[k])
-			}
-		}
-		zhigalkin = ""
-		fmt.Println()
+	for i := 0; i < len(functions); i++ {
+		zhigalkin = functions[i].CreatePolinom()
+		functions[i].PrintPolinom(i, zhigalkin)
 	}
-}
-
-/*
-*Алгоритм Саттоло
-*Данный алгоритм генерирует последовательность
- */
-func Sattolo(items []int) []int {
-	for i := len(items) - 1; i > 1; i-- {
-		j := rand.Intn(i)
-		items[j], items[i] = items[i], items[j]
-	}
-
-	return items
 }
 
 /**
