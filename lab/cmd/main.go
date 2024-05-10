@@ -6,6 +6,7 @@ import (
 	"log"
 	"math"
 	"strconv"
+	"strings"
 )
 
 var field = 6
@@ -23,7 +24,7 @@ func main() {
 		seqF      [][]int
 		seqTemp   []int
 		/*test      = []int{
-			3, 5, 15, 12, 8, 0, 4, 14, 10, 6, 1, 11, 9, 13, 2, 7,
+			1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,
 		}*/
 		zhigalkin []string
 	)
@@ -55,7 +56,7 @@ func main() {
 	for i := 0; i < field; i++ {
 		fmt.Printf("   f%d", field-i)
 	}
-	fmt.Println("-------------------------------------------------------------------")
+	fmt.Println()
 
 	for i := 0; i < int(math.Pow(2, float64(field))); i++ {
 		fmt.Printf("%d:", seq.Seq[i])
@@ -97,9 +98,56 @@ func main() {
 	fmt.Println("-------------------------------------------------------------------")
 	log.Println("Найдем запрeт для функций.")
 	for i := 0; i < len(functions); i++ {
-		if len(functions[i].ComputeZapret()) != 0 {
-			fmt.Printf("Запрет найден для f%d.\n", field-i)
+		zapret := functions[i].ComputeZapret()
+		if len(zapret) != 0 {
+			fmt.Printf("Запрет найден для f%d: %d.\n", field-i, zapret)
 			fmt.Printf("Функция f%d не сильноравновероятная.\n", field-i)
+		}
+	}
+
+	fmt.Println("-------------------------------------------------------------------")
+	log.Println("Найдем корреляционную иммунность и эластичность")
+	for i := 0; i < len(functions); i++ {
+		fmt.Printf("Функция f%d корреляционно иммунна порядка %d.\n", field-i, functions[i].CorrelativeImmunity())
+		fmt.Printf("Функция f%d эластична порядка %d.\n", field-i, functions[i].Elastic())
+	}
+
+	fmt.Println("-------------------------------------------------------------------")
+	log.Println("Найдем наилучшее приблежение")
+	for i := 0; i < len(functions); i++ {
+		var str []string
+		possibleVectors := functions[i].GetSpectre()
+		for k, v := range possibleVectors {
+			for j, val := range v {
+				if val == 1 {
+					str = append(str, fmt.Sprintf("x%d", j+1))
+				}
+			}
+			tmp := strings.Join(str, "+")
+			fmt.Printf("Наилучшее приблежение №%d для f%d: %s\n", k+1, functions[i].Field-i, tmp)
+			str = nil
+		}
+	}
+
+	fmt.Println("-------------------------------------------------------------------")
+	log.Println("Найдем коэффцициенты автокорреляции")
+	for i := 0; i < len(functions); i++ {
+		ratios := functions[i].ComputeAutocorrelationRatios()
+		fmt.Printf("Коэффициенты автокорреляции для f%d: ", field-i)
+		for _, v := range ratios {
+			fmt.Printf("%f ", v)
+		}
+		fmt.Println()
+	}
+
+	fmt.Println("-------------------------------------------------------------------")
+	log.Println("Найдем бент статус")
+	for i := 0; i < len(functions); i++ {
+		status := functions[i].GetBentStatus()
+		if status {
+			fmt.Printf("Функция f%d является бент-функцией.\n", field-i)
+		} else {
+			fmt.Printf("Функция f%d не является бент-функцией.\n", field-i)
 		}
 	}
 }

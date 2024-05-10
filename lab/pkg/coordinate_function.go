@@ -6,11 +6,25 @@ import (
 	"strings"
 )
 
+var (
+	table = [][]int{
+		{0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 1}, {0, 0, 0, 0, 1, 0}, {0, 0, 0, 0, 1, 1}, {0, 0, 0, 1, 0, 0}, {0, 0, 0, 1, 0, 1}, {0, 0, 0, 1, 1, 0}, {0, 0, 0, 1, 1, 1},
+		{0, 0, 1, 0, 0, 0}, {0, 0, 1, 0, 0, 1}, {0, 0, 1, 0, 1, 0}, {0, 0, 1, 0, 1, 1}, {0, 0, 1, 1, 0, 0}, {0, 0, 1, 1, 0, 1}, {0, 0, 1, 1, 1, 0}, {0, 0, 1, 1, 1, 1},
+		{0, 1, 0, 0, 0, 0}, {0, 1, 0, 0, 0, 1}, {0, 1, 0, 0, 1, 0}, {0, 1, 0, 0, 1, 1}, {0, 1, 0, 1, 0, 0}, {0, 1, 0, 1, 0, 1}, {0, 1, 0, 1, 1, 0}, {0, 1, 0, 1, 1, 1},
+		{0, 1, 1, 0, 0, 0}, {0, 1, 1, 0, 0, 1}, {0, 1, 1, 0, 1, 0}, {0, 1, 1, 0, 1, 1}, {0, 1, 1, 1, 0, 0}, {0, 1, 1, 1, 0, 1}, {0, 1, 1, 1, 1, 0}, {0, 1, 1, 1, 1, 1},
+		{1, 0, 0, 0, 0, 0}, {1, 0, 0, 0, 0, 1}, {1, 0, 0, 0, 1, 0}, {1, 0, 0, 0, 1, 1}, {1, 0, 0, 1, 0, 0}, {1, 0, 0, 1, 0, 1}, {1, 0, 0, 1, 1, 0}, {1, 0, 0, 1, 1, 1},
+		{1, 0, 1, 0, 0, 0}, {1, 0, 1, 0, 0, 1}, {1, 0, 1, 0, 1, 0}, {1, 0, 1, 0, 1, 1}, {1, 0, 1, 1, 0, 0}, {1, 0, 1, 1, 0, 1}, {1, 0, 1, 1, 1, 0}, {1, 0, 1, 1, 1, 1},
+		{1, 1, 0, 0, 0, 0}, {1, 1, 0, 0, 0, 1}, {1, 1, 0, 0, 1, 0}, {1, 1, 0, 0, 1, 1}, {1, 1, 0, 1, 0, 0}, {1, 1, 0, 1, 0, 1}, {1, 1, 0, 1, 1, 0}, {1, 1, 0, 1, 1, 1},
+		{1, 1, 1, 0, 0, 0}, {1, 1, 1, 0, 0, 1}, {1, 1, 1, 0, 1, 0}, {1, 1, 1, 0, 1, 1}, {1, 1, 1, 1, 0, 0}, {1, 1, 1, 1, 0, 1}, {1, 1, 1, 1, 1, 0}, {1, 1, 1, 1, 1, 1},
+	}
+)
+
 type CoordinateFunction struct {
 	Function []int
 	Field    int
 	weight   int
 	Polinom  []int
+	Ratios   []float64
 }
 
 func NewCoordinateFunction(seq []int, field int) *CoordinateFunction {
@@ -122,6 +136,174 @@ func (function *CoordinateFunction) ComputeZapret() []int {
 	}
 
 	return zapret
+}
+
+func (function *CoordinateFunction) CorrelativeImmunity() int {
+	var order int
+	function.Ratios = make([]float64, len(function.Function))
+	seqOut := fastFuries(function.Function)
+	function.Ratios = walshAdamar(seqOut, function.Field)
+
+	for i := 0; i < len(function.Ratios); i++ {
+		if function.Ratios[i] != 0 && (i == 1 || i == 4 || i == 8 || i == 16 || i == 32) {
+			order = 0
+			break
+		}
+		if function.Ratios[i] != 0 && (i == 3 || i == 5 || i == 6 || i == 9 || i == 10 || i == 22) {
+			order = 1
+			break
+		}
+		if function.Ratios[i] != 0 && (i == 7 || i == 15 || i == 19) {
+			order = 2
+			break
+		}
+	}
+
+	return order
+}
+
+func (function *CoordinateFunction) Elastic() int {
+	var (
+		count0 = 0
+		count1 = 0
+	)
+	for i := 0; i < len(function.Function); i++ {
+		if function.Function[i] == 1 {
+			count1++
+		} else {
+			count0++
+		}
+	}
+
+	if count0 == count1 {
+		return 0
+	}
+
+	return 0
+}
+
+func (function *CoordinateFunction) GetSpectre() [][]int {
+	var (
+		spectre         []float64
+		maximum         float64 = 0
+		possibleVectors [][]int
+	)
+	spectre = make([]float64, len(function.Function))
+	for idx, val := range function.Ratios {
+		spectre[idx] = val * math.Pow(2, float64(function.Field-1))
+	}
+
+	for _, val := range spectre {
+		if val > maximum {
+			maximum = val
+		}
+	}
+
+	for idx, val := range spectre {
+		if val == maximum {
+			possibleVectors = append(possibleVectors, table[idx])
+		}
+	}
+
+	return possibleVectors
+}
+
+func (function *CoordinateFunction) ComputeAutocorrelationRatios() []float64 {
+	var (
+		idxX     int
+		idxUxorX int
+	)
+	autocorrelationRatios := make([]float64, int(math.Pow(2, float64(function.Field))))
+	uXorX := make([]int, function.Field)
+
+	for i, uVector := range table {
+		for _, xVector := range table {
+			for j := 0; j < function.Field; j++ {
+				uXorX[j] = uVector[j] ^ xVector[j]
+			}
+			for idx, v := range table {
+				if equal(v, xVector) {
+					idxX = idx
+				}
+				if equal(v, uXorX) {
+					idxUxorX = idx
+				}
+			}
+			autocorrelationRatios[i] += math.Pow(-1, float64(function.Function[idxX]^function.Function[idxUxorX]))
+		}
+		autocorrelationRatios[i] /= math.Pow(2, float64(function.Field))
+	}
+
+	return autocorrelationRatios
+}
+
+func (function *CoordinateFunction) GetBentStatus() bool {
+	if function.Field%2 == 0 {
+		return false
+	}
+	for i := 0; i < len(function.Ratios)-1; i++ {
+		if function.Ratios[i] != function.Ratios[i+1] {
+			return false
+		}
+	}
+	return true
+}
+
+func equal(array1, array2 []int) bool {
+	for i := 0; i < len(array1); i++ {
+		if array1[i] != array2[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func walshAdamar(seq []int, field int) []float64 {
+	ratios := make([]float64, len(seq))
+	for i := 0; i < len(seq); i++ {
+		ratios[i] = float64(seq[i]) / math.Pow(2, float64(field))
+		if i == 0 {
+			ratios[i] = 1 - 2*ratios[i]
+		} else {
+			ratios[i] = -2 * ratios[i]
+		}
+	}
+	return ratios
+}
+
+func fastFuries(seq []int) []int {
+	var (
+		seqLeft  []int
+		seqRight []int
+		seqOut   []int
+		temp1    []int
+		temp2    []int
+	)
+
+	seqLeft = make([]int, len(seq)/2)
+	seqRight = make([]int, len(seq)/2)
+	seqOut = make([]int, len(seq))
+
+	for i := 0; i < len(seq)/2; i++ {
+		seqLeft[i] = seq[i] + seq[i+len(seq)/2]
+		seqRight[i] = seq[i] - seq[i+len(seq)/2]
+	}
+
+	if len(seq) == 2 {
+		seqOut[0] = seqLeft[0]
+		seqOut[1] = seqRight[0]
+		return seqOut
+	}
+
+	temp1 = fastFuries(seqLeft)
+	temp2 = fastFuries(seqRight)
+
+	for i := 0; i < len(seqOut)/2; i++ {
+		seqOut[i] = temp1[i]
+		seqOut[i+len(seqOut)/2] = temp2[i]
+	}
+
+	return seqOut
 }
 
 func product(arr []int, repeat int) [][]int {
