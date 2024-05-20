@@ -22,11 +22,11 @@ func main() {
 		seqBinary [][]int
 		seqF      [][]int
 		seqTemp   []int
-		test      = []int{
+		/*test      = []int{
 			50, 4, 41, 20, 16, 23, 46, 10, 60, 45, 53, 21, 27, 28, 17, 43, 18, 2, 22, 42, 13, 24, 30, 6, 25, 49, 54,
 			62, 39, 33, 40, 51, 3, 8, 38, 5, 9, 31, 61, 58, 56, 34, 12, 47, 63, 55, 29, 44, 1, 57, 32, 19, 7, 0, 48,
 			15, 26, 37, 35, 52, 36, 59, 14, 11,
-		}
+		}*/
 		zhigalkin []string
 	)
 	functions = make([]*pkg.CoordinateFunction, field)
@@ -44,7 +44,7 @@ func main() {
 
 	fmt.Println("Конвертируем исходную последовательность в двочиную систему.")
 	fmt.Println("-------------------------------------------------------------------")
-	seqBinary = ConvertToBinary(test)
+	seqBinary = ConvertToBinary(seq.Seq)
 	fmt.Println("Последовательность конвертирована.")
 
 	for j := 0; j < field; j++ {
