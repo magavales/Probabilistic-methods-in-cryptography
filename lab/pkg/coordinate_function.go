@@ -74,7 +74,7 @@ func (function *CoordinateFunction) PrintPolinom(i int, zhigalkin []string) {
 	var x = []string{
 		"x1", "x2", "x3", "x4", "x5", "x6",
 	}
-	fmt.Printf("Полином Жигалкина для f%d: %s\n", function.Field-i, strings.Join(zhigalkin, "+"))
+	fmt.Printf("Полином Жигалкина для f%d: %s\n", function.Field-i, strings.Join(zhigalkin, "⊕"))
 
 	str := strings.Join(zhigalkin, "")
 
@@ -86,7 +86,6 @@ func (function *CoordinateFunction) PrintPolinom(i int, zhigalkin []string) {
 }
 
 func (function *CoordinateFunction) ComputeZapret() []int {
-	var vector map[int]bool
 	vec := make([]*CoordinateFunction, 0)
 	for _, v := range product([]int{0, 1}, function.Field-1) {
 		vec = append(vec, NewCoordinateFunction(v, function.Field))
@@ -100,19 +99,19 @@ func (function *CoordinateFunction) ComputeZapret() []int {
 	count := 0
 	for {
 		for _, i := range tmp {
-			zero, one := i.nextStep(vector)
-			if float64(len(one.functions)) < min {
-				min = float64(len(one.functions))
-				next = []*Tree{one}
-			} else if float64(len(one.functions)) == min {
-				next = append(next, one)
+			i.nextStep(function.Function)
+			if float64(len(i.one.functions)) < min {
+				min = float64(len(i.one.functions))
+				next = []*Tree{i.one}
+			} else if float64(len(i.one.functions)) == min {
+				next = append(next, i.one)
 			}
 
-			if float64(len(zero.functions)) < min {
-				min = float64(len(zero.functions))
-				next = []*Tree{zero}
-			} else if float64(len(zero.functions)) == min {
-				next = append(next, zero)
+			if float64(len(i.zero.functions)) < min {
+				min = float64(len(i.zero.functions))
+				next = []*Tree{i.zero}
+			} else if float64(len(i.zero.functions)) == min {
+				next = append(next, i.zero)
 			}
 		}
 		if min == 0 {
@@ -126,12 +125,12 @@ func (function *CoordinateFunction) ComputeZapret() []int {
 		}
 	}
 	for _, i := range tmp {
-		zero, one := i.nextStep(vector)
-		if len(one.functions) == 0 {
-			return one.c
+		i.nextStep(function.Function)
+		if len(i.one.functions) == 0 {
+			zapret = i.one.c
 		}
-		if len(zero.functions) == 0 {
-			return zero.c
+		if len(i.zero.functions) == 0 {
+			zapret = i.zero.c
 		}
 	}
 

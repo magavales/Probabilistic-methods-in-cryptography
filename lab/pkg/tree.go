@@ -7,6 +7,8 @@ type Tree struct {
 	parent    *Tree
 	c         []int
 	field     int
+	zero      *Tree
+	one       *Tree
 }
 
 func NewTree(functions []*CoordinateFunction, field int) *Tree {
@@ -18,13 +20,13 @@ func NewTree(functions []*CoordinateFunction, field int) *Tree {
 	}
 }
 
-func (t *Tree) nextStep(vector map[int]bool) (*Tree, *Tree) {
-	zero := NewTree([]*CoordinateFunction{}, t.field)
-	one := NewTree([]*CoordinateFunction{}, t.field)
-	zero.parent = t
-	one.parent = t
-	zero.c = append(t.c, 0)
-	one.c = append(t.c, 1)
+func (t *Tree) nextStep(function []int) {
+	t.zero = NewTree([]*CoordinateFunction{}, t.field)
+	t.one = NewTree([]*CoordinateFunction{}, t.field)
+	t.zero.parent = t
+	t.one.parent = t
+	t.zero.c = append(t.c, 0)
+	t.one.c = append(t.c, 1)
 
 	for _, i := range t.functions {
 		j := i.Function[len(i.Function)-t.field+1:]
@@ -32,22 +34,21 @@ func (t *Tree) nextStep(vector map[int]bool) (*Tree, *Tree) {
 		for k := range j {
 			sum += j[k] * int(math.Pow(2, float64(t.field-k-1)))
 		}
-		if vector[sum] {
+		if function[sum] == 1 {
 			i.Function = append(i.Function, 0)
-			one.functions = append(one.functions, NewCoordinateFunction(i.Function, i.Field))
+			t.one.functions = append(t.one.functions, NewCoordinateFunction(i.Function, i.Field))
 		} else {
 			i.Function = append(i.Function, 0)
-			zero.functions = append(zero.functions, NewCoordinateFunction(i.Function, i.Field))
+			t.zero.functions = append(t.zero.functions, NewCoordinateFunction(i.Function, i.Field))
 		}
 
 		sum++
-		if vector[sum] {
+		if function[sum] == 1 {
 			i.Function = append(i.Function, 1)
-			one.functions = append(one.functions, NewCoordinateFunction(i.Function, i.Field))
+			t.one.functions = append(t.one.functions, NewCoordinateFunction(i.Function, i.Field))
 		} else {
 			i.Function = append(i.Function, 1)
-			zero.functions = append(zero.functions, NewCoordinateFunction(i.Function, i.Field))
+			t.zero.functions = append(t.zero.functions, NewCoordinateFunction(i.Function, i.Field))
 		}
 	}
-	return zero, one
 }

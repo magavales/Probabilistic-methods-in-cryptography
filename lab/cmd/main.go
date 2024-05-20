@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"laba1/pkg"
-	"log"
 	"math"
 	"strconv"
 	"strings"
@@ -23,9 +22,11 @@ func main() {
 		seqBinary [][]int
 		seqF      [][]int
 		seqTemp   []int
-		/*test      = []int{
-			1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1,
-		}*/
+		test      = []int{
+			50, 4, 41, 20, 16, 23, 46, 10, 60, 45, 53, 21, 27, 28, 17, 43, 18, 2, 22, 42, 13, 24, 30, 6, 25, 49, 54,
+			62, 39, 33, 40, 51, 3, 8, 38, 5, 9, 31, 61, 58, 56, 34, 12, 47, 63, 55, 29, 44, 1, 57, 32, 19, 7, 0, 48,
+			15, 26, 37, 35, 52, 36, 59, 14, 11,
+		}
 		zhigalkin []string
 	)
 	functions = make([]*pkg.CoordinateFunction, field)
@@ -34,16 +35,17 @@ func main() {
 		seqF[i] = make([]int, int(math.Pow(2, float64(field))))
 	}
 
-	log.Println("Генерируется последовательность.")
+	fmt.Println("Генерируется последовательность.")
 	seq := pkg.NewSequence(field)
 	seq.Sattolo(items64)
-	log.Println("Последовательность сгенерирована.")
+	fmt.Println("Последовательность сгенерирована.")
 	seq.Print()
+	fmt.Println()
 
-	log.Println("Конвертируем исходную последовательность в двочиную систему.")
+	fmt.Println("Конвертируем исходную последовательность в двочиную систему.")
 	fmt.Println("-------------------------------------------------------------------")
-	seqBinary = ConvertToBinary(seq.Seq)
-	log.Println("Последовательность конвертирована.")
+	seqBinary = ConvertToBinary(test)
+	fmt.Println("Последовательность конвертирована.")
 
 	for j := 0; j < field; j++ {
 		for i := 0; i < int(math.Pow(2, float64(field))); i++ {
@@ -72,7 +74,7 @@ func main() {
 	}
 
 	fmt.Println("-------------------------------------------------------------------")
-	log.Println("Посчитаем вес функции.")
+	fmt.Println("Посчитаем вес функции.")
 
 	for i := 0; i < len(functions); i++ {
 		fmt.Printf("Вес для f%d = %d\n", field-i, functions[i].GetWeight())
@@ -80,7 +82,7 @@ func main() {
 	}
 
 	fmt.Println("-------------------------------------------------------------------")
-	log.Println("Получим полином Жигалкина и фиктивные переменные для каждой функции.")
+	fmt.Println("Получим полином Жигалкина и фиктивные переменные для каждой функции.")
 
 	for i := 0; i < len(functions); i++ {
 		zhigalkin = functions[i].CreatePolinom()
@@ -88,7 +90,7 @@ func main() {
 	}
 
 	fmt.Println("-------------------------------------------------------------------")
-	log.Println("Найдем преобладание единиц.")
+	fmt.Println("Найдем преобладание единиц.")
 	for i := 0; i < len(functions); i++ {
 		if functions[i].Predominance() {
 			fmt.Printf("Для f%d преобладания единиц нет.\n", field-i)
@@ -96,7 +98,7 @@ func main() {
 	}
 
 	fmt.Println("-------------------------------------------------------------------")
-	log.Println("Найдем запрeт для функций.")
+	fmt.Println("Найдем запрeт для функций.")
 	for i := 0; i < len(functions); i++ {
 		zapret := functions[i].ComputeZapret()
 		if len(zapret) != 0 {
@@ -106,14 +108,14 @@ func main() {
 	}
 
 	fmt.Println("-------------------------------------------------------------------")
-	log.Println("Найдем корреляционную иммунность и эластичность")
+	fmt.Println("Найдем корреляционную иммунность и эластичность")
 	for i := 0; i < len(functions); i++ {
 		fmt.Printf("Функция f%d корреляционно иммунна порядка %d.\n", field-i, functions[i].CorrelativeImmunity())
 		fmt.Printf("Функция f%d эластична порядка %d.\n", field-i, functions[i].Elastic())
 	}
 
 	fmt.Println("-------------------------------------------------------------------")
-	log.Println("Найдем наилучшее приблежение")
+	fmt.Println("Найдем наилучшее приблежение")
 	for i := 0; i < len(functions); i++ {
 		var str []string
 		possibleVectors := functions[i].GetSpectre()
@@ -123,25 +125,30 @@ func main() {
 					str = append(str, fmt.Sprintf("x%d", j+1))
 				}
 			}
-			tmp := strings.Join(str, "+")
+			tmp := strings.Join(str, "⊕")
 			fmt.Printf("Наилучшее приблежение №%d для f%d: %s\n", k+1, functions[i].Field-i, tmp)
 			str = nil
 		}
 	}
 
 	fmt.Println("-------------------------------------------------------------------")
-	log.Println("Найдем коэффцициенты автокорреляции")
+	fmt.Println("Найдем коэффцициенты автокорреляции")
 	for i := 0; i < len(functions); i++ {
-		ratios := functions[i].ComputeAutocorrelationRatios()
-		fmt.Printf("Коэффициенты автокорреляции для f%d: ", field-i)
-		for _, v := range ratios {
-			fmt.Printf("%f ", v)
+		autocorrelationRatios := functions[i].ComputeAutocorrelationRatios()
+		fmt.Printf("Коэффициенты автокорреляции для f%d: \n", field-i)
+		for idx, v := range autocorrelationRatios {
+			fmt.Printf("%d: %.4f\n", idx+1, v)
+		}
+		fmt.Println()
+		fmt.Printf("Коэффициенты Уолша-Адамара для f%d: \n", field-i)
+		for idx, v := range functions[i].Ratios {
+			fmt.Printf("%d: %.4f\n", idx+1, v)
 		}
 		fmt.Println()
 	}
 
 	fmt.Println("-------------------------------------------------------------------")
-	log.Println("Найдем бент статус")
+	fmt.Println("Найдем бент статус")
 	for i := 0; i < len(functions); i++ {
 		status := functions[i].GetBentStatus()
 		if status {
