@@ -59,8 +59,8 @@ func (function *CoordinateFunction) CreatePolinom() []string {
 		str       string
 		zhigalkin []string
 	)
-	for i := 0; i < len(function.Function); i++ {
-		if function.Function[i] == 1 {
+	for i := 0; i < len(function.Polinom); i++ {
+		if function.Polinom[i] == 1 {
 			str = str + members[i] + " "
 		}
 	}
@@ -86,39 +86,46 @@ func (function *CoordinateFunction) PrintPolinom(i int, zhigalkin []string) {
 }
 
 func (function *CoordinateFunction) ComputeZapret() []int {
-	vec := make([]*CoordinateFunction, 0)
+	vec := make([]CoordinateFunction, 0)
 	for _, v := range product([]int{0, 1}, function.Field-1) {
-		vec = append(vec, NewCoordinateFunction(v, function.Field))
+		vec = append(vec, CoordinateFunction{Function: v, weight: function.Field})
 	}
 	t := NewTree(vec, function.Field)
 	zapret := make([]int, function.Field)
 
-	tmp := []*Tree{t}
-	min := math.Inf(1)
-	var next []*Tree
-	count := 0
+	var (
+		tmp   []Tree
+		min   = math.Inf(1)
+		next  []Tree
+		count = 0
+	)
+	tmp = make([]Tree, 0)
+	tmp = append(tmp, *t)
+
 	for {
 		for _, i := range tmp {
 			i.nextStep(function.Function)
 			if float64(len(i.one.functions)) < min {
 				min = float64(len(i.one.functions))
-				next = []*Tree{i.one}
+				next = make([]Tree, 0)
+				next = append(next, *i.one)
 			} else if float64(len(i.one.functions)) == min {
-				next = append(next, i.one)
+				next = append(next, *i.one)
 			}
 
 			if float64(len(i.zero.functions)) < min {
 				min = float64(len(i.zero.functions))
-				next = []*Tree{i.zero}
+				next = make([]Tree, 0)
+				next = append(next, *i.zero)
 			} else if float64(len(i.zero.functions)) == min {
-				next = append(next, i.zero)
+				next = append(next, *i.zero)
 			}
 		}
 		if min == 0 {
 			break
 		}
 		tmp = next
-		next = []*Tree{}
+		next = make([]Tree, 0)
 		count++
 		if min == math.Pow(2, float64(function.Field)) && count > function.Field*4 {
 			return []int{-1}
@@ -307,14 +314,17 @@ func fastFuries(seq []int) []int {
 
 func product(arr []int, repeat int) [][]int {
 	if repeat == 0 {
-		return [][]int{{}}
+		list := [][]int{{}}
+		return list
 	}
 
 	var result [][]int
 	subsets := product(arr, repeat-1)
 	for _, subset := range subsets {
 		for _, item := range arr {
-			result = append(result, append(subset, item))
+			newSubset := append([]int(nil), subset...)
+			newSubset = append(newSubset, item)
+			result = append(result, newSubset)
 		}
 	}
 	return result

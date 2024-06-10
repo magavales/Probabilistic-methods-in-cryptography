@@ -3,7 +3,7 @@ package pkg
 import "math"
 
 type Tree struct {
-	functions []*CoordinateFunction
+	functions []CoordinateFunction
 	parent    *Tree
 	c         []int
 	field     int
@@ -11,7 +11,7 @@ type Tree struct {
 	one       *Tree
 }
 
-func NewTree(functions []*CoordinateFunction, field int) *Tree {
+func NewTree(functions []CoordinateFunction, field int) *Tree {
 	return &Tree{
 		functions: functions,
 		parent:    nil,
@@ -21,8 +21,8 @@ func NewTree(functions []*CoordinateFunction, field int) *Tree {
 }
 
 func (t *Tree) nextStep(function []int) {
-	t.zero = NewTree([]*CoordinateFunction{}, t.field)
-	t.one = NewTree([]*CoordinateFunction{}, t.field)
+	t.zero = NewTree([]CoordinateFunction{}, t.field)
+	t.one = NewTree([]CoordinateFunction{}, t.field)
 	t.zero.parent = t
 	t.one.parent = t
 	t.zero.c = append(t.c, 0)
@@ -36,19 +36,19 @@ func (t *Tree) nextStep(function []int) {
 		}
 		if function[sum] == 1 {
 			i.Function = append(i.Function, 0)
-			t.one.functions = append(t.one.functions, NewCoordinateFunction(i.Function, i.Field))
+			t.one.functions = append(t.one.functions, CoordinateFunction{Function: i.Function, weight: i.Field})
 		} else {
 			i.Function = append(i.Function, 0)
-			t.zero.functions = append(t.zero.functions, NewCoordinateFunction(i.Function, i.Field))
+			t.zero.functions = append(t.zero.functions, CoordinateFunction{Function: i.Function, weight: i.Field})
 		}
 
 		sum++
 		if function[sum] == 1 {
 			i.Function = append(i.Function, 1)
-			t.one.functions = append(t.one.functions, NewCoordinateFunction(i.Function, i.Field))
+			t.one.functions = append(t.one.functions, CoordinateFunction{Function: i.Function, weight: i.Field})
 		} else {
 			i.Function = append(i.Function, 1)
-			t.zero.functions = append(t.zero.functions, NewCoordinateFunction(i.Function, i.Field))
+			t.zero.functions = append(t.zero.functions, CoordinateFunction{Function: i.Function, weight: i.Field})
 		}
 	}
 }
